@@ -1,0 +1,42 @@
+---
+- name: Install Nginx Web Server 
+  hosts: app-server
+  become: yes
+  tasks:
+    - name: Install Nginx
+      apt:
+        name: nginx
+        state: present
+        update_cache: yes
+      
+    - name: Enable spring site in nginx
+      template:
+        src: ../templates/nginx.http.j2
+        dest: /etc/nginx/sites-available/spring
+      notify: restart nginx
+
+    - name: enable spring site in nginx
+      file:
+        src: "/etc/nginx/sites-available/spring"
+        dest: "/etc/nginx/sites-enabled/spring"
+        state: link
+        force: yes
+      notify: restart nginx
+    
+    - name: de-activate default nginx site
+      file:
+        path: /etc/nginx/sites-enabled/default
+        state: absent
+      notify: restart nginx
+
+    - name: Ensure Nginx is running
+      service:
+        name: nginx
+        state: started
+        enabled: yes
+
+  handlers:
+    - name: restart nginx
+      service:
+        name: nginx
+        state: restarted

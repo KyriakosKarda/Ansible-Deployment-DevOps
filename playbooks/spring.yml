@@ -1,0 +1,53 @@
+---
+- hosts: app-server
+  become: yes
+  tasks:
+      - name: Install Java
+        apt:
+          name: openjdk-21-jdk
+          state: present
+          update_cache: yes
+      - name: Get Project From Github
+        git:
+          repo: "{{ env.spring_app_repo }}"
+          dest: "{{ env.spring_app_dest }}"
+          version: "{{ env.spring_app_version }}"
+          force: yes
+
+      - name : Change Permissions of the mvnw file
+        file:
+          path: "{{ env.spring_app_dest }}/DS-Lab-NOC/mvnw"
+          mode: '0777'
+      - name: Fix ownership of DS-Lab-NOC directory
+        become: yes
+        file:
+          path: "{{ env.spring_app_dest }}/DS-Lab-NOC"
+          owner: ubuntu
+          group: ubuntu
+          recurse: yes
+
+      - name: Build NOC service
+        become: yes
+        become_user: ubuntu
+        shell: >
+          cd {{ env.spring_app_dest }}/DS-Lab-NOC &&
+          ./mvnw clean package -DskipTests
+
+      - name: Start NOC service
+        become: yes
+        become_user: ubuntu
+        shell: >
+          cd {{ env.spring_app_dest }}/DS-Lab-NOC &&
+          nohup java -jar target/*jar > app.log 2>&1 &
+
+
+          
+      # - name: Activate Noc service with mvnw
+      #   become: yes
+      #   shell:
+      #     "cd {{ env.spring_app_dest }}/DS-Lab-NOC && nohup ./mvnw spring-boot:run > app.log 2>&1 &"
+      
+      - name: Run Application with Docker Compose
+        become: yes
+        shell:
+          "cd {{ env.spring_app_dest }} && docker compose up -d"
