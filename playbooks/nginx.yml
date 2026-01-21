@@ -1,6 +1,6 @@
 ---
-- name: Install Nginx Web Server 
-  hosts: app-server
+- name: Install and configure Nginx reverse proxy
+  hosts: application-vm
   become: yes
   tasks:
     - name: Install Nginx
@@ -8,28 +8,36 @@
         name: nginx
         state: present
         update_cache: yes
-      
-    - name: Enable spring site in nginx
+      register: nginx_install
+
+    - name: Create Nginx configuration from template
       template:
         src: ../templates/nginx.http.j2
         dest: /etc/nginx/sites-available/spring
+        backup: yes
       notify: restart nginx
 
-    - name: enable spring site in nginx
+    - name: Enable spring site in Nginx
       file:
-        src: "/etc/nginx/sites-available/spring"
-        dest: "/etc/nginx/sites-enabled/spring"
+        src: /etc/nginx/sites-available/spring
+        dest: /etc/nginx/sites-enabled/spring
         state: link
         force: yes
       notify: restart nginx
-    
-    - name: de-activate default nginx site
+
+    - name: Disable default Nginx site
       file:
         path: /etc/nginx/sites-enabled/default
         state: absent
       notify: restart nginx
 
-    - name: Ensure Nginx is running
+    - name: Verify Nginx configuration syntax
+      shell: nginx -t
+      register: nginx_test
+      failed_when: nginx_test.rc != 0
+      changed_when: false
+
+    - name: Ensure Nginx is running and enabled
       service:
         name: nginx
         state: started
@@ -40,3 +48,4 @@
       service:
         name: nginx
         state: restarted
+        daemon_reload: yes
