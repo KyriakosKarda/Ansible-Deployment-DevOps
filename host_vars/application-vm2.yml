@@ -1,1 +1,2 @@
-spring_app_dest: "/home/ubuntu/spring_app"
+env:
+  spring_app_dest: "/home/ubuntu/spring_app"
