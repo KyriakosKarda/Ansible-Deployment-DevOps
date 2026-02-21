@@ -2,19 +2,12 @@
 - hosts: app-server
   become: yes
   tasks:
-      - name: Install Java
-        apt:
-          name: openjdk-21-jdk
-          state: present
-          update_cache: yes
-      - name: Get Project From Github
-        git:
-          repo: "{{ env.spring_app_repo }}"
+      - name: Copy docker compose to target vm 
+        copy:
+          src: ../../docker-compose.yml
           dest: "{{ env.spring_app_dest }}"
-          version: "{{ env.spring_app_version }}"
-          force: yes
-      
-      - name: Run Application with Docker Compose
-        become: yes
-        shell:
-          "cd {{ env.spring_app_dest }} && docker compose up --build"
+
+      - name: Run docker compose up again
+        community.docker.docker_compose_v2:
+          project_src: "{{ env.spring_app_dest }}"
+        register: output
