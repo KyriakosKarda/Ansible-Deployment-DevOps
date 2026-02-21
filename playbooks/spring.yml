@@ -5,7 +5,7 @@
       - name: Copy docker compose to target vm 
         copy:
           src: ../../docker-compose.yml
-          dest: "{{ env.spring_app_dest }}"
+          dest: "{{ env.spring_app_dest }}/docker-compose.yml"
 
       - name: Run docker compose up again
         community.docker.docker_compose_v2:
