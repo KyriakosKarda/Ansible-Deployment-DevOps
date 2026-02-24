@@ -2,6 +2,14 @@
 - hosts: app-server
   become: yes
   tasks:
+      - name: Create app directory
+        file:
+          path: "{{ env.spring_app_dest }}"
+          state: directory
+          owner: ubuntu
+          group: ubuntu
+          mode: '0755'
+
       - name: Copy docker compose to target vm 
         copy:
           src: ../../docker-compose.yml
