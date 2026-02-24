@@ -1,21 +1,22 @@
 ---
 - hosts: app-server
   become: yes
+  vars:
+    app_directory: /opt/spring_app
   tasks:
       - name: Create app directory
         file:
-          path: "{{ env.spring_app_dest }}"
+          path: "{{ app_directory }}"
           state: directory
-          owner: " {{ ansible_user }} "
-          group: " {{ ansible_user }} "
           mode: '0755'
+      
 
       - name: Copy docker compose to target vm 
         copy:
           src: ../../docker-compose.yml
-          dest: "{{ env.spring_app_dest }}/docker-compose.yml"
+          dest: "{{ app_directory }}/docker-compose.yml"
 
       - name: Run docker compose up again
         community.docker.docker_compose_v2:
-          project_src: "{{ env.spring_app_dest }}"
+          project_src: "{{ app_directory }}"
         register: output
