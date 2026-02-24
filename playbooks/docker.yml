@@ -1,5 +1,5 @@
 ---
-- hosts: application-vm
+- hosts: app-server
   become: yes
   vars:
     docker_users:
@@ -81,3 +81,9 @@
       group:
         name: docker
         state: present
+    - name: Add user to docker group
+      become: yes
+      user:
+        name: azureuser
+        groups: docker
+        append: yes

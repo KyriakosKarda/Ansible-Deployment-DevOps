@@ -6,8 +6,8 @@
         file:
           path: "{{ env.spring_app_dest }}"
           state: directory
-          owner: ubuntu
-          group: ubuntu
+          owner: " {{ ansible_user }} "
+          group: " {{ ansible_user }} "
           mode: '0755'
 
       - name: Copy docker compose to target vm 
